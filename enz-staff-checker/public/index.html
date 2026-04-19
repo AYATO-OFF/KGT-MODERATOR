@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Enz Staff Checker — 2026</title>
+  <meta name="description" content="Enz Staff Checker — validate cookies against API endpoints. Classify results as valid, bad, or expired." />
+  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='%2300e5ff'/><text x='50%25' y='56%25' text-anchor='middle' font-size='34' font-family='Arial' font-weight='900' fill='%230b0f17'>E</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <header class="nav">
+    <div class="brand">
+      <div class="logo">E</div>
+      <div class="brand-text">
+        <div class="brand-name">Enz Staff Checker</div>
+        <div class="brand-tag">Cookie validator · API endpoint probe · <span class="accent">2026</span></div>
+      </div>
+    </div>
+    <nav class="links">
+      <a href="#checker">Checker</a>
+      <a href="#how">How it works</a>
+      <a href="#api">API</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="pill">New · 2026 Edition</div>
+      <h1>Check cookies against any <span class="accent">API endpoint</span> — instantly.</h1>
+      <p class="lede">Paste a list of cookies, point them at your endpoint, and get a clean verdict for each one: <span class="tag valid">valid</span> <span class="tag bad">bad</span> <span class="tag expired">expired</span>. Built for staff teams that need fast, reliable triage.</p>
+      <div class="hero-ctas">
+        <a class="btn primary" href="#checker">Start checking</a>
+        <a class="btn ghost" href="#how">How it works</a>
+      </div>
+      <div class="stats">
+        <div><div class="stat-num">200</div><div class="stat-lbl">cookies / batch</div></div>
+        <div><div class="stat-num">20x</div><div class="stat-lbl">parallel probes</div></div>
+        <div><div class="stat-num">4</div><div class="stat-lbl">verdict classes</div></div>
+      </div>
+    </section>
+
+    <section id="checker" class="panel">
+      <div class="panel-head">
+        <h2>Checker</h2>
+        <div class="panel-sub">Runs on the server — your browser never hits the target directly.</div>
+      </div>
+
+      <form id="checkForm" class="form">
+        <div class="grid-2">
+          <label class="field">
+            <span class="label">API endpoint</span>
+            <input id="endpoint" name="endpoint" type="url" placeholder="https://api.example.com/v1/me" required />
+          </label>
+
+          <label class="field">
+            <span class="label">HTTP method</span>
+            <select id="method" name="method">
+              <option>GET</option>
+              <option>POST</option>
+              <option>HEAD</option>
+              <option>PUT</option>
+              <option>DELETE</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid-3">
+          <label class="field">
+            <span class="label">Timeout (ms)</span>
+            <input id="timeoutMs" name="timeoutMs" type="number" min="1000" max="60000" step="500" value="15000" />
+          </label>
+          <label class="field">
+            <span class="label">Concurrency</span>
+            <input id="concurrency" name="concurrency" type="number" min="1" max="20" step="1" value="5" />
+          </label>
+          <label class="field">
+            <span class="label">Extra headers (JSON, optional)</span>
+            <input id="headers" name="headers" type="text" placeholder='{"X-App":"enz"}' />
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="label">Cookies — one per line</span>
+          <textarea id="cookies" name="cookies" rows="8" placeholder="sessionid=abc123; csrftoken=xyz&#10;auth=eyJhbGciOi...&#10;JSESSIONID=...; remember_me=..." required></textarea>
+          <span class="hint">Each line is treated as one full <code>Cookie</code> header value. Lines starting with <code>#</code> are ignored.</span>
+        </label>
+
+        <div class="actions">
+          <button id="submitBtn" class="btn primary" type="submit">
+            <span class="btn-label">Run check</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+          <button id="clearBtn" class="btn ghost" type="button">Clear</button>
+        </div>
+      </form>
+
+      <div id="results" class="results" hidden>
+        <div class="summary">
+          <div class="sum-card valid"><div class="sum-num" id="sumValid">0</div><div class="sum-lbl">Valid</div></div>
+          <div class="sum-card bad"><div class="sum-num" id="sumBad">0</div><div class="sum-lbl">Bad</div></div>
+          <div class="sum-card expired"><div class="sum-num" id="sumExpired">0</div><div class="sum-lbl">Expired</div></div>
+          <div class="sum-card error"><div class="sum-num" id="sumError">0</div><div class="sum-lbl">Errors</div></div>
+        </div>
+
+        <div class="toolbar">
+          <div class="filters">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="valid">Valid</button>
+            <button class="chip" data-filter="bad">Bad</button>
+            <button class="chip" data-filter="expired">Expired</button>
+            <button class="chip" data-filter="error">Errors</button>
+          </div>
+          <div class="exports">
+            <button class="btn small" id="copyValid" type="button">Copy valid</button>
+            <button class="btn small" id="downloadJson" type="button">Download JSON</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" id="resultsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Verdict</th>
+                <th>HTTP</th>
+                <th>Cookie (masked)</th>
+                <th>Time</th>
+                <th>Snippet</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="panel">
+      <div class="panel-head"><h2>How it works</h2></div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-ico">1</div>
+          <h3>You submit</h3>
+          <p>Enter the API endpoint and a list of cookies. Optional headers, timeout and concurrency are supported.</p>
+        </div>
+        <div class="card">
+          <div class="card-ico">2</div>
+          <h3>We probe</h3>
+          <p>The server sends one request per cookie (in parallel) with redirects disabled, then reads a bounded snippet of the response.</p>
+        </div>
+        <div class="card">
+          <div class="card-ico">3</div>
+          <h3>You get verdicts</h3>
+          <p>Each cookie is classified as <b>valid</b>, <b>bad</b>, <b>expired</b>, or <b>error</b> — based on status codes and response heuristics.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="api" class="panel">
+      <div class="panel-head"><h2>HTTP API</h2></div>
+<pre class="code"><code>POST /api/check
+Content-Type: application/json
+
+{
+  "endpoint": "https://api.example.com/v1/me",
+  "method": "GET",
+  "cookies": ["sessionid=abc", "sessionid=def"],
+  "headers": { "X-App": "enz" },
+  "timeoutMs": 15000,
+  "concurrency": 5
+}</code></pre>
+<pre class="code"><code>200 OK
+{
+  "ok": true,
+  "total": 2,
+  "summary": { "valid": 1, "bad": 1, "expired": 0, "error": 0 },
+  "results": [
+    { "state": "valid",   "status": 200, "cookie": "sessio…abc",   "elapsedMs": 142 },
+    { "state": "bad",     "status": 401, "cookie": "sessio…def",   "elapsedMs": 137 }
+  ]
+}</code></pre>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div>© 2026 · Enz Staff Checker</div>
+    <div class="muted">Built for staff teams. Use responsibly — only on endpoints you own or are authorized to test.</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
