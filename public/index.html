@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Enz Staff Checker — Cookie Validator 2026</title>
+<meta name="description" content="Enz Staff Checker — a 2026 tool to check cookies against API endpoints and get Valid / Bad / Expired results in real time." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%AA%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="bg-orbs">
+  <span class="orb orb-1"></span>
+  <span class="orb orb-2"></span>
+  <span class="orb orb-3"></span>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">Ξ</div>
+    <div class="brand-text">
+      <h1>Enz Staff Checker</h1>
+      <span class="tag">Cookie Validator · API Endpoint Probe · 2026</span>
+    </div>
+  </div>
+  <nav class="top-actions">
+    <a class="chip" href="#checker">Checker</a>
+    <a class="chip" href="#bulk">Bulk</a>
+    <a class="chip" href="#howto">How it works</a>
+    <a class="chip primary" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="pill">NEW · 2026 EDITION</div>
+    <h2>Check any cookie against any API endpoint.<br /><span class="grad">Valid · Bad · Expired — in milliseconds.</span></h2>
+    <p class="sub">
+      Paste a cookie, drop an API endpoint, and Enz will fire a real request and classify the session instantly.
+      Built for staff, auditors and developers who need fast, reliable cookie diagnostics.
+    </p>
+    <div class="stats">
+      <div class="stat"><b id="stat-checked">0</b><span>Checks this session</span></div>
+      <div class="stat"><b id="stat-valid">0</b><span>Valid</span></div>
+      <div class="stat"><b id="stat-bad">0</b><span>Bad</span></div>
+      <div class="stat"><b id="stat-expired">0</b><span>Expired</span></div>
+    </div>
+  </section>
+
+  <section id="checker" class="card">
+    <div class="card-head">
+      <h3>Single check</h3>
+      <div class="dot-row"><span class="dot valid"></span><span class="dot bad"></span><span class="dot expired"></span></div>
+    </div>
+
+    <form id="checker-form" class="grid">
+      <label class="field span-2">
+        <span>API endpoint</span>
+        <input type="url" id="endpoint" placeholder="https://api.example.com/v1/me" required />
+      </label>
+
+      <label class="field">
+        <span>HTTP method</span>
+        <select id="method">
+          <option>GET</option>
+          <option>POST</option>
+          <option>PUT</option>
+          <option>DELETE</option>
+          <option>HEAD</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Timeout</span>
+        <input type="text" value="15s" disabled />
+      </label>
+
+      <label class="field span-2">
+        <span>Cookie string</span>
+        <textarea id="cookie" rows="3" placeholder="session=abc123; auth_token=eyJhbGciOi..."></textarea>
+      </label>
+
+      <label class="field span-2">
+        <span>Extra headers (JSON, optional)</span>
+        <textarea id="headers" rows="2" placeholder='{"X-Client":"enz"}'></textarea>
+      </label>
+
+      <div class="actions span-2">
+        <button type="submit" class="btn primary" id="btn-check">
+          <span class="btn-label">Check cookie</span>
+          <span class="spinner" hidden></span>
+        </button>
+        <button type="button" class="btn ghost" id="btn-clear">Clear</button>
+      </div>
+    </form>
+
+    <div id="result" class="result" hidden></div>
+  </section>
+
+  <section id="bulk" class="card">
+    <div class="card-head">
+      <h3>Bulk check</h3>
+      <span class="muted">One cookie per line. Same endpoint for every cookie.</span>
+    </div>
+    <form id="bulk-form" class="grid">
+      <label class="field span-2">
+        <span>API endpoint</span>
+        <input type="url" id="bulk-endpoint" placeholder="https://api.example.com/v1/me" required />
+      </label>
+      <label class="field span-2">
+        <span>Cookies (one per line)</span>
+        <textarea id="bulk-cookies" rows="6" placeholder="session=aaa; auth=111\nsession=bbb; auth=222"></textarea>
+      </label>
+      <div class="actions span-2">
+        <button type="submit" class="btn primary" id="btn-bulk">
+          <span class="btn-label">Run bulk check</span>
+          <span class="spinner" hidden></span>
+        </button>
+        <button type="button" class="btn ghost" id="btn-bulk-clear">Clear</button>
+      </div>
+    </form>
+
+    <div id="bulk-result" class="bulk-result" hidden>
+      <div class="bulk-head">
+        <div>#</div><div>Cookie (preview)</div><div>Status</div><div>Verdict</div><div>Time</div>
+      </div>
+      <div id="bulk-rows"></div>
+    </div>
+  </section>
+
+  <section id="howto" class="card info">
+    <h3>How it works</h3>
+    <ol>
+      <li>Enter the API endpoint you want to probe (e.g. a <code>/me</code> or <code>/profile</code> route).</li>
+      <li>Paste the cookie string exactly as it appears in your browser's <code>Cookie</code> header.</li>
+      <li>Enz sends a real request from the server with your cookie attached and inspects the response.</li>
+      <li>The response is classified as <b class="v">Valid</b>, <b class="b">Bad</b>, <b class="e">Expired</b>, or <b>Unknown</b>.</li>
+    </ol>
+    <p class="muted tiny">
+      Verdicts are based on HTTP status, redirect location and well-known response hints
+      (e.g. <code>401</code> → bad, <code>419/440</code> → expired, body containing "session expired" → expired).
+    </p>
+  </section>
+</main>
+
+<footer>
+  <span>© 2026 Enz Staff Checker · Built for fast cookie diagnostics</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
