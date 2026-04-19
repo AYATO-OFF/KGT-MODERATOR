@@ -152,7 +152,7 @@ app.post("/api/check-cookies", async (req, res) => {
   });
 });
 
-app.get("*", (req, res) => {
+app.get(/^\/(?!api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
