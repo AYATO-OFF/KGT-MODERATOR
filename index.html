@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enz Staff Checker — 2026</title>
+  <meta name="description" content="Enz Staff Checker — validate cookies against any API endpoint. Detect valid, bad and expired sessions in seconds." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow glow-a" aria-hidden="true"></div>
+  <div class="bg-glow glow-b" aria-hidden="true"></div>
+  <div class="bg-glow glow-c" aria-hidden="true"></div>
+
+  <header class="nav">
+    <div class="brand">
+      <div class="brand-mark">E</div>
+      <div class="brand-text">
+        <span class="brand-title">Enz<span class="accent"> Staff</span> Checker</span>
+        <span class="brand-sub">Cookie validator · 2026</span>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#checker">Checker</a>
+      <a href="#presets">Presets</a>
+      <a href="#results">Results</a>
+      <a href="#how">How it works</a>
+    </nav>
+    <div class="nav-cta">
+      <span class="pill">
+        <span class="dot"></span> Live
+      </span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <span class="badge">new · 2026 engine</span>
+        <h1>
+          Check thousands of cookies
+          <span class="grad">in seconds.</span>
+        </h1>
+        <p class="lede">
+          Paste raw cookies in <b>Netscape</b>, <b>JSON</b>, or <b>header</b> format, point
+          to any API endpoint, and instantly sort them into
+          <span class="chip chip-ok">Valid</span>
+          <span class="chip chip-exp">Expired</span>
+          <span class="chip chip-bad">Bad</span>
+          with a beautiful modern report.
+        </p>
+        <div class="hero-stats">
+          <div><b id="statCount">0</b><span>loaded</span></div>
+          <div><b id="statValid">0</b><span>valid</span></div>
+          <div><b id="statExpired">0</b><span>expired</span></div>
+          <div><b id="statBad">0</b><span>bad</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="checker" class="panel">
+      <div class="panel-head">
+        <h2>Cookie batch</h2>
+        <div class="panel-tools">
+          <button class="btn ghost" id="btnSample" type="button">Load sample</button>
+          <button class="btn ghost" id="btnClear" type="button">Clear</button>
+        </div>
+      </div>
+
+      <div class="grid two">
+        <label class="field">
+          <span class="field-label">Cookies · one per line</span>
+          <textarea id="cookiesInput" spellcheck="false" rows="12"
+            placeholder="# Netscape:&#10;.example.com    TRUE    /    TRUE    1893456000    sessionid    abc123&#10;&#10;# or header format:&#10;sessionid=abc123; csrftoken=xyz789&#10;&#10;# or JSON array:&#10;[{&quot;name&quot;:&quot;sessionid&quot;,&quot;value&quot;:&quot;abc123&quot;,&quot;expires&quot;:1893456000}]"></textarea>
+        </label>
+
+        <div class="stack">
+          <label class="field">
+            <span class="field-label">API endpoint</span>
+            <input id="endpoint" type="url" autocomplete="off" spellcheck="false"
+              placeholder="https://api.example.com/v1/me" />
+          </label>
+
+          <div class="grid two tight">
+            <label class="field">
+              <span class="field-label">Method</span>
+              <select id="method">
+                <option>GET</option>
+                <option>POST</option>
+                <option>HEAD</option>
+                <option>PUT</option>
+                <option>DELETE</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Concurrency</span>
+              <input id="concurrency" type="number" min="1" max="50" value="8" />
+            </label>
+          </div>
+
+          <div class="grid two tight">
+            <label class="field">
+              <span class="field-label">Valid if status</span>
+              <input id="validStatus" type="text" value="200,204" />
+            </label>
+            <label class="field">
+              <span class="field-label">Expired if status</span>
+              <input id="expiredStatus" type="text" value="401,403,419,440" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="field-label">Valid if response contains <span class="muted">(optional)</span></span>
+            <input id="validContains" type="text" placeholder='e.g. "user_id" or "logged_in":true' />
+          </label>
+
+          <label class="field">
+            <span class="field-label">Expired if response contains <span class="muted">(optional)</span></span>
+            <input id="expiredContains" type="text" placeholder='e.g. "session expired"' />
+          </label>
+
+          <label class="field row">
+            <input id="sendAsHeader" type="checkbox" checked />
+            <span>Send cookies via <code>Cookie</code> header (disable for <code>credentials: include</code>)</span>
+          </label>
+
+          <div class="actions">
+            <button class="btn primary" id="btnRun" type="button">
+              <span class="btn-label">Run checker</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+            <button class="btn" id="btnStop" type="button" disabled>Stop</button>
+            <button class="btn" id="btnExport" type="button" disabled>Export valid</button>
+          </div>
+
+          <p class="note">
+            <b>Heads up:</b> browsers block <code>Cookie</code> headers to cross-origin
+            APIs due to CORS. Self-host a tiny proxy or run against endpoints that
+            permit <code>credentials: include</code> for accurate results.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="presets" class="panel">
+      <div class="panel-head">
+        <h2>Quick presets</h2>
+        <span class="muted">Click to prefill endpoint + rules</span>
+      </div>
+      <div class="preset-grid" id="presetGrid"></div>
+    </section>
+
+    <section id="results" class="panel">
+      <div class="panel-head">
+        <h2>Results</h2>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-filter="all" type="button">All <span class="count" id="cAll">0</span></button>
+          <button class="tab" data-filter="valid" type="button">Valid <span class="count ok" id="cValid">0</span></button>
+          <button class="tab" data-filter="expired" type="button">Expired <span class="count exp" id="cExpired">0</span></button>
+          <button class="tab" data-filter="bad" type="button">Bad <span class="count bad" id="cBad">0</span></button>
+          <button class="tab" data-filter="pending" type="button">Pending <span class="count" id="cPending">0</span></button>
+        </div>
+      </div>
+
+      <div class="progress"><div class="bar" id="progressBar"></div></div>
+
+      <div class="table-wrap">
+        <table class="results">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cookie preview</th>
+              <th>Status</th>
+              <th>HTTP</th>
+              <th>Time</th>
+              <th>Detail</th>
+            </tr>
+          </thead>
+          <tbody id="results"></tbody>
+        </table>
+        <div class="empty" id="emptyState">
+          <div class="empty-illu">✦</div>
+          <h3>No cookies checked yet</h3>
+          <p>Paste cookies above, set your endpoint, then hit <b>Run checker</b>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="panel">
+      <div class="panel-head"><h2>How Enz classifies cookies</h2></div>
+      <div class="grid three">
+        <div class="card">
+          <div class="card-icon ok">✓</div>
+          <h3>Valid</h3>
+          <p>Response HTTP status is in the <code>valid</code> list, or the response body contains the <code>valid</code> keyword you defined.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon exp">!</div>
+          <h3>Expired</h3>
+          <p>Response status matches the <code>expired</code> list (401, 403 …) or the body matches your expired keyword — session existed once but no longer authenticates.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon bad">×</div>
+          <h3>Bad</h3>
+          <p>Malformed cookie, network failure, CORS block, or a server status that is neither valid nor expired (5xx, 400, timeout).</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div>
+      <span class="brand-mark small">E</span>
+      <span>Enz Staff Checker · built 2026</span>
+    </div>
+    <div class="foot-links">
+      <a href="#checker">Checker</a>
+      <a href="#how">How it works</a>
+      <a href="#results">Results</a>
+    </div>
+  </footer>
+
+  <template id="rowTemplate">
+    <tr>
+      <td class="idx"></td>
+      <td class="preview"><code></code></td>
+      <td class="status"><span class="pill-status">pending</span></td>
+      <td class="http"></td>
+      <td class="time"></td>
+      <td class="detail"></td>
+    </tr>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
