@@ -1,11 +1,11 @@
 {
   "name": "enz-staff-checker",
   "version": "1.0.0",
-  "description": "Cookie validation dashboard for API endpoints",
-  "main": "server.js",
+  "description": "Telegram bot for cookie validation against API endpoints",
+  "main": "bot.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node bot.js",
+    "dev": "node --watch bot.js"
   },
   "keywords": [
     "cookie",
@@ -16,6 +16,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^5.1.0"
+    "telegraf": "^4.16.3"
   }
 }
