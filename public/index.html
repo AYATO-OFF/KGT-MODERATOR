@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enz Staff Checker</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="hero">
+        <h1>Enz Staff Checker</h1>
+        <p>
+          Check cookie status against API endpoints and view whether sessions are
+          <strong>valid</strong>, <strong>bad</strong>, or
+          <strong>expired</strong>.
+        </p>
+      </header>
+
+      <section class="panel">
+        <form id="checker-form">
+          <label for="cookie">Cookie</label>
+          <textarea
+            id="cookie"
+            name="cookie"
+            placeholder="session=abc123; token=xyz456"
+            required
+          ></textarea>
+
+          <div class="grid">
+            <div>
+              <label for="method">HTTP Method</label>
+              <select id="method" name="method">
+                <option>GET</option>
+                <option>POST</option>
+                <option>PUT</option>
+                <option>PATCH</option>
+                <option>DELETE</option>
+              </select>
+            </div>
+            <div>
+              <label for="timeoutMs">Timeout (ms)</label>
+              <input
+                id="timeoutMs"
+                name="timeoutMs"
+                type="number"
+                min="1000"
+                value="10000"
+              />
+            </div>
+          </div>
+
+          <label for="endpoints">API Endpoints (one per line)</label>
+          <textarea
+            id="endpoints"
+            name="endpoints"
+            placeholder="https://api.example.com/me&#10;https://api.example.com/session/check"
+            required
+          ></textarea>
+
+          <button id="submit-btn" type="submit">Check Cookie</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div id="status-line" class="status-line">Ready.</div>
+        <div id="summary" class="summary hidden"></div>
+        <div id="results" class="results"></div>
+      </section>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
